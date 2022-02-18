@@ -1,5 +1,6 @@
 const path = require('path')
 const HtmlWebpackPlugin = require('html-webpack-plugin')
+const ReactRefreshWebpackPlugin = require('@pmmmwh/react-refresh-webpack-plugin')
 
 const isDevelopment = process.env.NODE_ENV !== 'production';//cria uma variavel para dizer se estamos no desenvovimento ou producao
 
@@ -17,12 +18,14 @@ module.exports =
                 },
                 devServer: {//pra n precisar fazer toda hora o yarn webpack
                         static: path.resolve(__dirname, 'public'),
+                        hot:true,
                       },
                 plugins: [//monstrar sempre onde esta a aplicacao
-                        new HtmlWebpackPlugin({
+                        isDevelopment && new ReactRefreshWebpackPlugin(),
+                                                new HtmlWebpackPlugin({
                                 template: path.resolve(__dirname,'public','index.html')
                         })
-                ],
+                ].filter(Boolean),
         module: //como a nossa aplicacao vai se comportarquando estivermos importando cada tipo de arquivo
         {
                 rules:
@@ -30,7 +33,15 @@ module.exports =
                         {
                         test: /\.jsx$/, //cifrao diz que o arquivo deve terminar em ~ 
                         exclude: /node_modules/,//o mode faz o trabalho que o webpack faria entao eu tiro essa funcionalidade
-                        use: 'babel-loader',//integracao entre o babel e webpack
+                        use: {
+                                loader: 'babel-loader',//integracao entre o babel e webpack
+                                options: {
+                                        plugins: [
+                                                isDevelopment && require.resolve('react-refresh/babel')
+                                        ].filter(Boolean)
+                                },
+                        }
+                        
                         },
                         {
                         test: /\.scss$/, //cifrao diz que o arquivo deve terminar em ~ 
